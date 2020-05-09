@@ -1,2 +1,3 @@
 TRUNCATE
-  table1;
+  habits,
+  users;

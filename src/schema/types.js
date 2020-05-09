@@ -6,48 +6,37 @@ const {
 	GraphQLList
 } = require('graphql');
 
-const _ = require("lodash")
-
-// Dummy data
-const db = require("./dummy-data")
-
-const MongoModelBook = require('../mongo-models/book')
-const MongoModelAuthor = require('../mongo-models/author')
-
-// Define Movie Type
-const BookType = new GraphQLObjectType({
-	name: 'Book',
+const HabitType = new GraphQLObjectType({
+	name: 'Habit',
 	fields: () => ({
 		id: { type: GraphQLString },
-		name: { type: GraphQLString },
-		genre: { type: GraphQLString },
-		author: {
-			type: AuthorType,
-			resolve(parent, args) {
-				return MongoModelAuthor.findById(parent.authorId)
-			}
-		}
+		userid: { type: GraphQLString },
+		title: { type: GraphQLString },
+		sunday: { type: GraphQLString },
+		monday: { type: GraphQLString },
+		tuesday: { type: GraphQLString },
+		wednesday: { type: GraphQLString },
+		thursday: { type: GraphQLString },
+		friday: { type: GraphQLString },
+		saturday: { type: GraphQLString },
+		logged_days: { type: GraphQLString },
+		missed_days: { type: GraphQLString },
+		starthabit_date: { type: GraphQLString },
+		endhabit_date: { type: GraphQLString },
 	})
 })
 
-const AuthorType = new GraphQLObjectType({
-	name: 'Author',
+const UserType = new GraphQLObjectType({
+	name: 'User',
 	fields: () => ({
 		id: { type: GraphQLString },
-		name: { type: GraphQLString },
-		age: { type: GraphQLString },
-		books: {
-			type: new GraphQLList(BookType),
-			resolve(parent, args) {
-				return MongoModelBook.find({
-					authorId: parent.id
-				})
-			}
-		}
+		user_name: { type: GraphQLString },
+		user_password: { type: GraphQLString },
+		avatar: { type: GraphQLString }
 	})
 })
 
 module.exports = {
-	BookType: BookType,
-	AuthorType: AuthorType
+	HabitType: HabitType,
+	UserType: UserType,
 }

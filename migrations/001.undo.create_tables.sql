@@ -1,3 +1,2 @@
-DROP TABLE IF EXISTS table1;
-DROP TYPE user_status;
-DROP TYPE visibility;
+DROP TABLE IF EXISTS habits;
+DROP TABLE IF EXISTS users;

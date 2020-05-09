@@ -9,8 +9,17 @@ const xss = require("xss");
 
 
 router_app
-	.route("/")
-	.all(requireAuth)
+	.route("/habits")
+	// .all(requireAuth)
+	.get((req, res, next) => {
+		service_app.getHabitsByUserId(
+			req.app.get('db'), 1
+		)
+		.then(result => {
+			return res.status(200).json(result)
+		})
+		.catch(next)
+	})
 	.post(jsonParser, (req, res, next) => {
 		
 	})

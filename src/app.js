@@ -17,6 +17,7 @@ const router_auth = require("./router_auth")
 const graphqlHTTP = require('express-graphql');
 const RootQuery = require("./schema/query.js");
 
+
 // Setup Middleware
 const morganOption = (NODE_ENV === "production")
   ? "tiny"
@@ -32,6 +33,8 @@ app.use("/graphql", graphqlHTTP({
   schema: RootQuery,
   graphiql: true,
 }));
+
+
 // Our production applications should hide error messages from users and other malicious parties
 app.use(function errorHandler(error, req, res, next) {
   let response
