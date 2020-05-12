@@ -63,7 +63,6 @@ const RootQuery = new GraphQLObjectType({
 
 				let payload = service_auth.verifyJwt(token);
 				let user_id = payload.id
-				console.log(user_id)
 
 				let habitsByUser = async () => {
 					try {
@@ -91,34 +90,40 @@ const RootQuery = new GraphQLObjectType({
 			},
 			resolve(parent, args) {
 				let userFound = async () => {
-					let result = await service_auth.getUser(
-						knexInstance,
-						args.user_name
-					)
-
-					let passwordCheck = await service_auth.comparePasswords(
-						args.user_password,
-						result.user_password
-					)
-
-					if (passwordCheck) {
-						let createToken = await service_auth.createJwt(
-							result.user_name,
-							{
-								"id": result.id,
-								"user_name": result.user_name,
-							}
+					try {
+						let result = await service_auth.getUser(
+							knexInstance,
+							args.user_name
 						)
-						console.log({ ...result, value: createToken })
-						return { ...result, token: createToken }
-					} else {
-						throw new UserInputError("wrong credentials")
+
+						if (result == undefined) {
+							throw new Error("Username or password is incorrect.")
+						}
+
+						let passwordCheck = await service_auth.comparePasswords(
+							args.user_password,
+							result.user_password
+						)
+
+						if (!passwordCheck) {
+							throw new Error("Username or password is incorrect.")
+						}
+
+						if (passwordCheck) {
+							let createToken = await service_auth.createJwt(
+								result.user_name,
+								{
+									"id": result.id,
+									"user_name": result.user_name,
+								}
+							)
+
+							return { ...result, token: createToken }
+						} 
+					} catch(error) {
+						throw new Error("Username or password is incorrect.")
 					}
-					
-					
 				}
-
-
 				return userFound()
 			}
 		},
@@ -135,7 +140,6 @@ const RootQuery = new GraphQLObjectType({
 							knexInstance,
 							args.id
 						)
-						console.log(result)
 						return result[0]
 					} catch(error) {
 						console.log("habitById err: ", err)
@@ -198,7 +202,6 @@ const RootMutation = new GraphQLObjectType({
 							knexInstance,
 							obj
 						)
-						console.log(result)
 						return result[0]
 					} catch(err) {
 						console.log("addHabit err: ", err)
@@ -206,6 +209,59 @@ const RootMutation = new GraphQLObjectType({
 				}
 
 				return addHabit()
+
+			}
+		},
+
+		// Add a habit
+		editHabit: {
+			type: HabitType,
+			args: {
+				title: { type: new GraphQLNonNull(GraphQLString) },
+				sunday: { type: new GraphQLNonNull(GraphQLBoolean) },
+				monday: { type: new GraphQLNonNull(GraphQLBoolean) },
+				tuesday: { type: new GraphQLNonNull(GraphQLBoolean) },
+				wednesday: { type: new GraphQLNonNull(GraphQLBoolean) },
+				thursday: { type: new GraphQLNonNull(GraphQLBoolean) },
+				friday: { type: new GraphQLNonNull(GraphQLBoolean) },
+				saturday: { type: new GraphQLNonNull(GraphQLBoolean) },
+			},
+			resolve(parents, args, context) {
+				let token = context.headers.authorization
+				token = token.slice(7, token.length);
+
+				let payload = service_auth.verifyJwt(token);
+				let user_id = payload.id
+
+				let startDate_iso = new Date().toISOString()
+				let startDate = dateHelper.parseISO(startDate_iso)
+
+				let obj = {
+					user_id: user_id,
+					title: args.title,
+					sunday: args.sunday,
+					monday: args.monday,
+					tuesday: args.tuesday,
+					wednesday: args.wednesday,
+					thursday: args.thursday,
+					friday: args.friday,
+					saturday: args.saturday,
+					habit_start_date: startDate
+				}
+
+				let editHabit = async () => {
+					try {
+						let result = await service_app.addHabit(
+							knexInstance,
+							obj
+						)
+						return result[0]
+					} catch (err) {
+						console.log("addHabit err: ", err)
+					}
+				}
+
+				return editHabit()
 
 			}
 		},
@@ -222,13 +278,12 @@ const RootMutation = new GraphQLObjectType({
 							knexInstance,
 							args.id
 						)
-						console.log(result)
 
 						if (result == 0 ) {
-							console.log("No record was found")
+							
 							return result
 						} else if (result == 1 ) {
-							console.log("Deleted")
+							
 							return result
 						}
 
@@ -259,10 +314,10 @@ const RootMutation = new GraphQLObjectType({
 						)
 
 						if (result == 0) {
-							console.log("No record was found")
+							
 							return result
 						} else if (result == 1) {
-							console.log("Deleted")
+							
 							return result
 						}
 						
@@ -289,7 +344,6 @@ const RootMutation = new GraphQLObjectType({
 
 				let addUser = async () => {
 					try {
-						console.log(args.user_password)
 						let encryptedPw = await service_auth.encryptPw(args.user_password)
 
 						let obj = {
@@ -330,10 +384,9 @@ const RootMutation = new GraphQLObjectType({
 						)
 
 						if (result == 0) {
-							console.log("No record was found")
+							
 							return result
 						} else if (result == 1) {
-							console.log("Deleted")
 							return result
 						}
 
