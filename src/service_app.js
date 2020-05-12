@@ -4,17 +4,25 @@ const dateHelper = require("date-fns")
 const service_app = {
 
 	// Habits Methods
+	getHabitById(knex, id) {
+		return knex
+			.select("*")
+			.from("habits")
+			.where("id", id)
+	},
+
 	getHabitsByUserId(knex, userId) {
 		return knex
 			.select("*")
 			.from("habits")
-			.where("userid", userId)
+			.where("user_id", userId)
 	},
 
 	addHabit(knex, habit) {
 		return knex
 			.insert(habit)
 			.into("habits")
+			.returning("*")
 
 	},
 
@@ -24,17 +32,27 @@ const service_app = {
 			.del()
 	},
 
-	deleteHabitsByUserId(knex, id) {
+	deleteHabitsByUserId(knex, user_id) {
 		return knex("habits")
-			.where("userid", id)
+			.where("user_id", user_id)
 			.del()
 	},
 
-	// logHabitById(knex, id) {
-	// 	return knex("habits")
-	// 		.where("userid", id)
-	// 		.del()
-	// },
+	grabStartDateById(knex, id) {
+		return knex
+			.select("habit_start_date")
+			.from("habits")
+			.where("id", id)
+	},
+
+	logHabit(knex, id, dayNumber) {
+		let column = `day${dayNumber}`
+		
+		return knex("habits")
+		.where("id", id)
+		.update(column, true)
+		.returning("*")		
+	},
 
 	// User Methods
 	getUserById(knex, userId) {
@@ -48,6 +66,7 @@ const service_app = {
 		return knex
 			.insert(user)
 			.into("users")
+			.returning(["id", "user_name"])
 
 	},
 	
