@@ -29,17 +29,20 @@ const RootQuery = new GraphQLObjectType({
 		// Get a single user
 		userById: {
 			type: new GraphQLList(UserType),
-			args: {
-				id: { type: GraphQLString }
-			},
-			resolve(parent, args) {
+			resolve(parent, args, context) {
 
 				let userById = async () => {
+
+					let token = context.headers.authorization
+					token = token.slice(7, token.length);
+
+					let payload = service_auth.verifyJwt(token);
+					let user_id = payload.id
 
 					try {
 						let result = await service_app.getUserById(
 							knexInstance,
-							args.id
+							user_id
 						)
 
 						return result;
@@ -407,29 +410,147 @@ const RootMutation = new GraphQLObjectType({
 			type: HabitType,
 			args: {
 				id: { type: new GraphQLNonNull(GraphQLString)},
-				column: { type: new GraphQLNonNull(GraphQLString)}
+				column: { type: new GraphQLNonNull(GraphQLString)},
+				current_streak: { type: new GraphQLNonNull(GraphQLInt)},
+				last_log: { type: GraphQLString },
+				highest_streak: { type: new GraphQLNonNull(GraphQLInt) },
 			},
-			resolve(parent, args) {
+			resolve(parent, args, context) {
 
 				let logHabit = async() => {
 					try {
-						let logged = async() => {
-							try {
-								let result = await service_app.logHabit(
-									knexInstance,
-									args.id,
-									args.column
-									)	
-									return result[0]
-								} catch(err) {
-								console.log('logged err', err)
-								}
-						}
+						let token = context.headers.authorization
+						token = token.slice(7, token.length);
+
+						let payload = service_auth.verifyJwt(token);
+						let user_id = payload.id
+
+						let user = await service_app.getUserById(
+							knexInstance,
+							user_id
+						)
+
+						let logged_total = user[0].logged_total
+						logged_total++
+						let habits_done = user[0].habits_done
+						let perfect_habits = user[0].perfect_habits
+						let biggest_streak = user[0].biggest_streak
+
+						// let logged = async() => {
+						// 	try {
+	
+								let today = new Date().toISOString()
+								today = dateHelper.parseISO(today)
 								
-						return logged()
+								let last_logged = args.last_log
+								last_logged = dateHelper.parseISO(last_logged)
+								
+								
+								let diff = dateHelper.differenceInCalendarDays(
+									today,
+									last_logged
+								)
+
+								await service_app.updateLogTotal(
+									knexInstance,
+									user_id,
+									logged_total
+								)
+
+
+								// if diff >= 30; complete habit
+								if (diff >= 30 ) {
+									await service_app.updateHabitsDone(
+										knexInstance,
+										user_id,
+										habits_done++
+									)
+								}
+
+								// If user skips a day
+								if (diff > 1) {	
+
+									let logged = await service_app.logHabit(
+										knexInstance,
+										args.id,
+										args.column
+									)
+
+									await service_app.updateLastLog(
+										knexInstance,
+										args.id,
+										today
+									)
+
+									await service_app.updateStreak(
+										knexInstance,
+										args.id,
+										1
+									)
+
+									// If highest streak = 0; increment 
+									if (args.highest_streak == 0) {
+										await service_app.updateHighestStreak(
+											knexInstance,
+											args.id,
+											1
+										)	
+									}
+								
+								// If it's a consecutive day
+								} else if (diff == 1) {
+
+									// await service_app.logHabit(
+									let logged = await service_app.logHabit(
+										knexInstance,
+										args.id,
+										args.column
+									)
+
+									await service_app.updateLastLog(
+										knexInstance,
+										args.id,
+										today
+									)
+
+									await service_app.updateStreak(
+										knexInstance,
+										args.id,
+										args.current_streak + 1
+									)	
+
+									// If streak is greater than highest; update
+									if (args.current_streak + 1 > args.highest_streak) {
+										await service_app.updateHighestStreak(
+											knexInstance,
+											args.id,
+											args.current_streak + 1
+										)	
+									}
+
+									if (args.current_streak + 1 > biggest_streak) {
+										await service_app.updateBiggestStreak(
+											knexInstance,
+											user_id,
+											args.current_streak + 1
+										)
+									}
+
+									return logged[0]
+
+								}
+
+								
+								// } catch(err) {
+								// console.log('logged err', err)
+								// }
+						// }
+								
+						// return logged()
 								
 					} catch (err) {
 						console.log('logHabit err', err)
+						return err
 					}
 							
 				} 
@@ -438,7 +559,111 @@ const RootMutation = new GraphQLObjectType({
 			}
 		},
 
-		
+		// logged_total
+		logged_total: {
+			type: UserType,
+			args: {
+				value: { type: new GraphQLNonNull(GraphQLString)}
+			},
+			resolve(parent, root, context) {
+				
+				let updateLogTotal = async() => {
+					let token = context.headers.authorization
+					token = token.slice(7, token.length);
+
+					let payload = service_auth.verifyJwt(token);
+					let user_id = payload.id
+
+					let result = await service_app.updateLogTotal(
+						knexInstance,
+						user_id,
+						args.value
+					)
+
+					return result
+				}
+
+				return updateLogTotal()
+			}
+		},
+		// habits_done
+		habits_done: {
+			type: UserType,
+			args: {
+				value: { type: new GraphQLNonNull(GraphQLString) }
+			},
+			resolve(parent, root) {
+				let updateHabitsDone = async () => {
+					let token = context.headers.authorization
+					token = token.slice(7, token.length);
+
+					let payload = service_auth.verifyJwt(token);
+					let user_id = payload.id
+
+					let result = await service_app.updateHabitsDone(
+						knexInstance,
+						user_id,
+						args.value
+					)
+
+					return result
+				}
+
+				return updateHabitsDone()
+			}
+		},
+		// perfect_habits 
+		perfect_habits: {
+			type: UserType,
+			args: {
+				value: { type: new GraphQLNonNull(GraphQLString) }
+			},
+			resolve(parent, root) {
+				let updatePerfectHabits = async () => {
+					let token = context.headers.authorization
+					token = token.slice(7, token.length);
+
+					let payload = service_auth.verifyJwt(token);
+					let user_id = payload.id
+
+					let result = await service_app.updatePerfectHabits(
+						knexInstance,
+						user_id,
+						args.value
+					)
+
+					return result
+				}
+
+				return updatePerfectHabits()
+			}
+		},
+		// biggest_streak
+		biggest_streak: {
+			type: UserType,
+			args: {
+				value: { type: new GraphQLNonNull(GraphQLString) }
+			},
+			resolve(parent, root) {
+				let updateBiggestStreak = async () => {
+					let token = context.headers.authorization
+					token = token.slice(7, token.length);
+
+					let payload = service_auth.verifyJwt(token);
+					let user_id = payload.id
+
+					let result = await service_app.updateBiggestStreak(
+						knexInstance,
+						user_id,
+						args.value
+					)
+
+					return result
+				}
+
+				return updateBiggestStreak()
+			}
+		},
 	}
 })
 

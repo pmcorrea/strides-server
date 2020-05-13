@@ -25,6 +25,9 @@ const HabitType = new GraphQLObjectType({
 		logged_missed: { type: GraphQLString },
 		logged_total: { type: GraphQLString },
 		habit_start_date: { type: GraphQLString },
+		last_log: { type: GraphQLString },
+		current_streak: { type: GraphQLInt },
+		highest_streak: { type: GraphQLInt },
 		day0: { type: GraphQLString },
 		day1: { type: GraphQLString },
 		day2: { type: GraphQLString },
@@ -64,7 +67,11 @@ const UserType = new GraphQLObjectType({
 		id: { type: GraphQLString },
 		user_name: { type: GraphQLString },
 		user_password: { type: GraphQLString },
-		avatar: { type: GraphQLString }
+		avatar: { type: GraphQLString },
+		logged_total: { type: GraphQLString },
+		perfect_habits: { type: GraphQLString },
+		biggest_streak: { type: GraphQLString },
+		habits_done: { type: GraphQLString }
 	})
 })
 
