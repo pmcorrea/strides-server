@@ -1,6 +1,6 @@
 // Import Environment Variables
 require("dotenv").config()
-const { NODE_ENV } = require("./config")
+const { NODE_ENV, CLIENT_ENDPOINT } = require("./config")
 
 // Import Modules
 const express = require("express")
@@ -26,9 +26,9 @@ const morganOption = (NODE_ENV === "production")
 app.use(morgan(morganOption))
 app.use(helmet())
 // app.use(cors())
-var corsOptions = {
-  origin: 'https://strides.now.sh/',
-  credentials: true 
+const corsOptions = {
+  origin: CLIENT_ORIGIN,
+  optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
 app.use("/api", router_app)
