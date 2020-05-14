@@ -56,6 +56,37 @@ const RootQuery = new GraphQLObjectType({
 			}
 		},
 
+		// Get a single user
+		getUserByName: {
+			type: UserType,
+			args: {
+				user_name: { type: GraphQLString }
+			},
+			resolve(parent, args, context) {
+
+				let getUserByName = async () => {
+					try {
+						let result = await service_app.getUserByName(
+							knexInstance,
+							args.user_name
+						)
+						return result[0]
+						if (result.length !== 0) {
+							result = result[0]
+							console.log(result)
+							return result;
+						}
+	
+					} catch (err) {
+						console.log("getUserByName err: ", err)
+					}
+
+				}
+
+				return getUserByName()
+			}
+		},
+
 		// Get all habits by user_id
 		habitsByUser: {
 			type: new GraphQLList(HabitType),
@@ -414,6 +445,17 @@ const RootMutation = new GraphQLObjectType({
 				current_streak: { type: new GraphQLNonNull(GraphQLInt)},
 				last_log: { type: GraphQLString },
 				highest_streak: { type: new GraphQLNonNull(GraphQLInt) },
+
+				habit_start_date: { type: new GraphQLNonNull(GraphQLString) },
+				perfect_streak: { type: GraphQLString },
+				sunday: { type: new GraphQLNonNull(GraphQLString) },
+				monday: { type: new GraphQLNonNull(GraphQLString) },
+				tuesday: { type: new GraphQLNonNull(GraphQLString) },
+				wednesday: { type: new GraphQLNonNull(GraphQLString) },
+				thursday: { type: new GraphQLNonNull(GraphQLString) },
+				friday: { type: new GraphQLNonNull(GraphQLString) },
+				saturday: { type: GraphQLString },
+				last_scheduled_logged: { type: GraphQLString }
 			},
 			resolve(parent, args, context) {
 
@@ -433,8 +475,21 @@ const RootMutation = new GraphQLObjectType({
 						let logged_total = user[0].logged_total
 						logged_total++
 						let habits_done = user[0].habits_done
-						let perfect_habits = user[0].perfect_habits
 						let biggest_streak = user[0].biggest_streak
+
+						let perfectObj = {
+							id: args.id,
+							habit_start_date: args.habit_start_date,
+							perfect_streak: args.perfect_streak,
+							sunday: args.sunday,
+							monday: args.monday,
+							tuesday: args.tuesday,
+							wednesday: args.wednesday,
+							thursday: args.thursday,
+							friday: args.friday,
+							saturday: args.saturday,
+							last_scheduled_logged: args.last_scheduled_logged,
+						}
 
 						// let logged = async() => {
 						// 	try {
@@ -547,6 +602,10 @@ const RootMutation = new GraphQLObjectType({
 						// }
 								
 						// return logged()
+
+						await service_app.perfectStreak(knexInstance,
+							perfectObj
+						)
 								
 					} catch (err) {
 						console.log('logHabit err', err)

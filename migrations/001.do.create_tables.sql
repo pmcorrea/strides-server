@@ -30,6 +30,8 @@ CREATE TABLE habits (
     current_streak INTEGER DEFAULT 0,
     highest_streak INTEGER DEFAULT 0,
     last_log TEXT DEFAULT '2020-01-01T00:00:00.000Z',
+    last_scheduled_logged TEXT DEFAULT '',
+    perfect_streak BOOLEAN DEFAULT true,
     day0 BOOLEAN DEFAULT false,
     day1 BOOLEAN DEFAULT false,
     day2 BOOLEAN DEFAULT false,
