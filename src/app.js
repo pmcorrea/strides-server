@@ -29,7 +29,7 @@ app.use(cors())
 app.use("/api", router_app)
 app.use("/api/auth", router_auth)
 
-app.use("/", graphqlHTTP({
+app.use("/graphql", graphqlHTTP({
   schema: RootQuery,
   graphiql: true,
 }));
