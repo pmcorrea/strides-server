@@ -25,12 +25,12 @@ const morganOption = (NODE_ENV === "production")
 
 app.use(morgan(morganOption))
 app.use(helmet())
-// app.use(cors())
-var corsOptions = {
-  origin: 'https://strides.now.sh/',
-  credentials: true 
-};
-app.use(cors(corsOptions));
+app.use(cors())
+// var corsOptions = {
+//   origin: 'https://strides.now.sh/',
+//   credentials: true 
+// };
+// app.use(cors(corsOptions));
 app.use("/api", router_app)
 app.use("/api/auth", router_auth)
 
