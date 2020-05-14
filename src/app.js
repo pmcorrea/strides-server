@@ -27,7 +27,7 @@ app.use(morgan(morganOption))
 app.use(helmet())
 // app.use(cors())
 const corsOptions = {
-  origin: CLIENT_ORIGIN,
+  origin: CLIENT_ENDPOINT,
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
