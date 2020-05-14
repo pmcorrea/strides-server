@@ -26,10 +26,10 @@ const morganOption = (NODE_ENV === "production")
 app.use(morgan(morganOption))
 app.use(helmet())
 app.use(cors())
-app.use("/", router_app)
+app.use("/api", router_app)
 app.use("/api/auth", router_auth)
 
-app.use("/graphql", graphqlHTTP({
+app.use("/", graphqlHTTP({
   schema: RootQuery,
   graphiql: true,
 }));
