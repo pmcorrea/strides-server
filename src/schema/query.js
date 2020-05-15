@@ -125,6 +125,7 @@ const RootQuery = new GraphQLObjectType({
 			resolve(parent, args) {
 				let userFound = async () => {
 					try {
+
 						let result = await service_auth.getUser(
 							knexInstance,
 							args.user_name
@@ -155,7 +156,7 @@ const RootQuery = new GraphQLObjectType({
 							return { ...result, token: createToken }
 						} 
 					} catch(error) {
-						throw new Error("Username or password is incorrect.")
+						throw new Error("Network or server error occured.")
 					}
 				}
 				return userFound()

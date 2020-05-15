@@ -10,8 +10,6 @@ const helmet = require("helmet")
 
 // Instantiate Express App
 const app = express()
-const router_app = require("./router_app")
-const router_auth = require("./router_auth")
 
 // Instantiate GraphQL Server
 const graphqlHTTP = require('express-graphql');
@@ -25,15 +23,12 @@ const morganOption = (NODE_ENV === "production")
 
 app.use(morgan(morganOption))
 app.use(helmet())
-// app.use(cors())
-const corsOptions = {
-  origin: CLIENT_ENDPOINT,
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
-app.use("/api", router_app)
-app.use("/api/auth", router_auth)
-
+app.use(cors())
+// const corsOptions = {
+//   origin: CLIENT_ENDPOINT,
+//   optionsSuccessStatus: 200
+// };
+// app.use(cors(corsOptions));
 app.use("/graphql", graphqlHTTP({
   schema: RootQuery,
   graphiql: true,
