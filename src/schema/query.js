@@ -125,6 +125,10 @@ const RootQuery = new GraphQLObjectType({
 			resolve(parent, args) {
 				let userFound = async () => {
 					try {
+					
+						if (args.user_name == "" || args.user_password == "") {
+							return new Error("Username and password must not be blank.")
+						}
 
 						let result = await service_auth.getUser(
 							knexInstance,
@@ -132,7 +136,7 @@ const RootQuery = new GraphQLObjectType({
 						)
 
 						if (result == undefined) {
-							throw new Error("Username or password is incorrect.")
+							return new Error("Username or password is incorrect.")
 						}
 
 						let passwordCheck = await service_auth.comparePasswords(
@@ -141,7 +145,7 @@ const RootQuery = new GraphQLObjectType({
 						)
 
 						if (!passwordCheck) {
-							throw new Error("Username or password is incorrect.")
+							return new Error("Username or password is incorrect.")
 						}
 
 						if (passwordCheck) {
@@ -156,7 +160,7 @@ const RootQuery = new GraphQLObjectType({
 							return { ...result, token: createToken }
 						} 
 					} catch(error) {
-						throw new Error("Network or server error occured.")
+						return new Error("Network or server error occured.")
 					}
 				}
 				return userFound()
