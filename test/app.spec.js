@@ -10,7 +10,7 @@ describe("GraphQL Endpoint is up", () => {
 
   it("Should login demo user and return id of '1'", async () => {
 
-        let result = await axios.post("http://localhost:5000/graphql", {
+    let result = await axios.post("https://young-castle-93107.herokuapp.com/graphql", {
           query: `
           query {
             loginUser(user_name: "Peter", user_password: "adminpassword") {
